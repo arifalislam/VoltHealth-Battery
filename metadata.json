@@ -1,0 +1,6 @@
+{
+  "name": "VoltHealth",
+  "description": "Battery health and power analyzer to calculate real-time power draw, track charging sessions and duration, log battery history, and estimate battery health and total capacity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
