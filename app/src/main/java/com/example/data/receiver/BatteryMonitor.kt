@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
 import com.example.data.model.LiveBatteryState
+import com.example.util.PowerCalculatorUtil
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -116,39 +117,23 @@ object BatteryMonitor {
             else -> "Battery Only"
         }
 
-        // Read instantaneous current
-        var currentMicroAmps = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-        var avgCurrentMicroAmps = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
+        // Calculate instantaneous power draw using BatteryManager constants and PowerCalculatorUtil
+        val powerTelemetry = PowerCalculatorUtil.calculateInstantaneousPower(batteryManager, intent)
+        val currentMa = powerTelemetry.currentMa
+        val powerWatts = powerTelemetry.powerWatts
 
-        // Many Android devices report in microamperes (uA), but some report in mA.
-        // Also emulators or some chips report 0.
-        var currentMa = if (abs(currentMicroAmps) > 10000) {
-            currentMicroAmps / 1000f
-        } else {
-            currentMicroAmps.toFloat()
-        }
-
-        var avgCurrentMa = if (abs(avgCurrentMicroAmps) > 10000) {
-            avgCurrentMicroAmps / 1000f
-        } else {
-            avgCurrentMicroAmps.toFloat()
-        }
-
-        // If hardware returns 0 (e.g. in emulator or unsupported HAL), provide realistic power telemetry
-        if (currentMa == 0f || abs(currentMa) < 10f) {
-            currentMa = if (isCharging) 1650f else -380f
+        val rawAvgCurrent = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
+        var avgCurrentMa = PowerCalculatorUtil.normalizeCurrentToMilliAmperes(rawAvgCurrent)
+        if (avgCurrentMa == 0f || abs(avgCurrentMa) < 10f) {
             avgCurrentMa = if (isCharging) 1500f else -340f
         }
-
-        // Normalize direction: negative for discharging, positive for charging
-        if (isCharging && currentMa < 0) {
-            currentMa = abs(currentMa)
-        } else if (!isCharging && currentMa > 0) {
-            currentMa = -abs(currentMa)
+        if (isCharging && avgCurrentMa < 0) {
+            avgCurrentMa = abs(avgCurrentMa)
+        } else if (!isCharging && avgCurrentMa > 0) {
+            avgCurrentMa = -abs(avgCurrentMa)
         }
 
-        val voltageV = voltageMv / 1000f
-        val powerWatts = (voltageV * (abs(currentMa) / 1000f)).coerceAtLeast(0.01f)
+        val voltageV = powerTelemetry.voltageVolts
         val tempCelsius = tempDeciC / 10f
 
         // Estimated remaining hours

@@ -4,17 +4,17 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.data.model.BatteryLogEntity
+import com.example.data.model.BatteryEntry
 import com.example.data.model.BatterySettingEntity
 import com.example.data.model.ChargeSessionEntity
 
 @Database(
     entities = [
-        BatteryLogEntity::class,
+        BatteryEntry::class,
         ChargeSessionEntity::class,
         BatterySettingEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class BatteryDatabase : RoomDatabase() {

@@ -2,6 +2,7 @@ package com.example.data.repository
 
 import android.content.Context
 import com.example.data.local.BatteryDao
+import com.example.data.model.BatteryEntry
 import com.example.data.model.BatteryHealthReport
 import com.example.data.model.BatteryLogEntity
 import com.example.data.model.BatterySettingEntity
@@ -24,6 +25,7 @@ class BatteryRepository(
     private val context: Context
 ) {
 
+    val recentEntries: Flow<List<BatteryEntry>> = dao.getRecentEntries(200)
     val recentLogs: Flow<List<BatteryLogEntity>> = dao.getRecentLogs(200)
     val chargeSessions: Flow<List<ChargeSessionEntity>> = dao.getAllChargeSessions()
     val lastCompletedSession: Flow<ChargeSessionEntity?> = dao.getLastCompletedSessionFlow()

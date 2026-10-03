@@ -4,23 +4,26 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Historical snapshot of battery metrics sampled over time.
+ * Room entity representing historical logs of battery voltage, current flow,
+ * timestamps, and operational metrics for battery health tracking.
  */
-@Entity(tableName = "battery_logs")
-data class BatteryLogEntity(
+@Entity(tableName = "battery_entries")
+data class BatteryEntry(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val timestamp: Long = System.currentTimeMillis(),
-    val level: Int,
-    val scale: Int = 100,
     val voltageMv: Int,
-    val temperatureDeciCelsius: Int, // e.g. 325 = 32.5 °C
-    val status: Int, // BatteryManager.BATTERY_STATUS_*
-    val pluggedType: Int, // BatteryManager.BATTERY_PLUGGED_* (0 = unplugged)
     val currentMa: Float, // Negative for discharging, positive for charging
-    val powerMw: Float, // Power in mW (Voltage * Current)
-    val healthStatus: Int // BatteryManager.BATTERY_HEALTH_*
+    val level: Int = 50,
+    val scale: Int = 100,
+    val temperatureDeciCelsius: Int = 290, // e.g. 325 = 32.5 °C
+    val status: Int = 3, // BatteryManager.BATTERY_STATUS_*
+    val pluggedType: Int = 0, // BatteryManager.BATTERY_PLUGGED_* (0 = unplugged)
+    val powerMw: Float = 0f, // Power in mW (Voltage * Current)
+    val healthStatus: Int = 2 // BatteryManager.BATTERY_HEALTH_*
 )
+
+typealias BatteryLogEntity = BatteryEntry
 
 /**
  * Record of a charge session from plugged-in to unplugged.
